@@ -1,0 +1,104 @@
+﻿1. create schema pandemic;
+use pandemic;
+
+
+2. create table countries(
+CountryID int primary key auto_increment,
+    Entity varchar(100),
+    Code varchar(10)
+);
+
+
+insert into countries (Entity, Code)
+select distinct Entity, Code
+from infectious_cases;
+
+
+select count(*) from infectious_cases;
+
+
+
+
+
+
+create table countries (
+    CountryID int auto_increment primary key,
+    Entity varchar(100),
+    Code varchar(10),
+    unique(Entity, Code)
+);
+
+
+
+
+insert into countries (Entity, Code)
+select distinct Entity, Code
+from infectious_cases;
+
+
+
+
+alter table infectious_cases add column CountryID int;
+
+
+
+
+update infectious_cases ic
+join countries c on ic.Entity = c.Entity and ic.Code = c.Code
+set ic.CountryID = c.CountryID
+where c.CountryID is not null;
+
+
+
+
+alter table infectious_cases
+drop column Entity,
+drop column Code;
+3. select CountryID,
+avg(Number_rabies) as average_number,
+min(Number_rabies) as min_value,
+max(Number_rabies) as max_value,
+sum(Number_rabies) as suma
+from infectious_cases
+where Number_rabies != ""
+group by CountryID
+order by average_number desc
+limit 10;
+
+
+
+
+4. update infectious_cases
+set start_year = makedate(year,1);
+
+
+update infectious_cases
+set curt_date = curdate();
+
+
+update infectious_cases
+set difference_date = TIMESTAMPDIFF(year, start_year, curt_date);
+
+
+
+
+5. drop function if exists year_difference;
+
+
+DELIMITER //
+create function year_difference(input_year INT)
+returns INT
+deterministic
+begin
+  declare start_date date;
+  declare years_diff int;
+
+
+  set start_date = makedate(input_year, 1);
+  set years_diff = timestampdiff(year, start_date, curdate());
+
+
+  return years_diff;
+end//
+DELIMITER ;
+select year_difference(1996) as diff_year;
